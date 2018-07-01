@@ -56,8 +56,12 @@ namespace Core.MarketAnalyzer {
 
         return jsonObject;
       } catch (WebException ex) {
-        log.DoLogCritical(ex.Message, ex);
-        throw ex;
+        if (swallowException) {
+          // Do nothing, as we do not want to get this logged. Only uncritical functions uses this
+        } else {
+          log.DoLogCritical("Url: " + url + " Message: " + ex.Message, ex);
+          throw ex;
+        }
       } catch (Exception ex) {
         if (swallowException) {
           // Do nothing, as we do not want to get this logged. Only uncritical functions uses this
@@ -130,13 +134,9 @@ namespace Core.MarketAnalyzer {
       try {
         string baseUrl = "https://api.github.com/repos/legedric/ptmagic/releases/latest";
 
-        log.DoLogDebug("GitHub - Getting most recent release...");
         Newtonsoft.Json.Linq.JObject jsonObject = GetSimpleJsonObjectFromURL(baseUrl, log, true);
         if (jsonObject != null) {
-          log.DoLogDebug("GitHub - Received most recent release.");
-
           result = jsonObject.GetValue("tag_name").ToString();
-          log.DoLogDebug("GitHub - Most recent release version is " + result);
         }
       } catch (WebException ex) {
         log.DoLogDebug("GitHub version check error: " + ex.Message);
